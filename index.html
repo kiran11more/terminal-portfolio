@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kiran@terminal: ~ | Kiran More — Web Developer & Technical SEO</title>
+  <meta name="description" content="Lightweight interactive terminal portfolio of Kiran More (DIGIVELOCE) — 10+ years production web engineering across WordPress, Shopify, Astro & Workers AI.">
+  <link rel="canonical" href="https://cli.kiranm.in/">
+  <meta property="og:title" content="Kiran More — Interactive Terminal Portfolio">
+  <meta property="og:description" content="Explore Kiran's stack, projects, and chat with his live AI assistant inside an authentic macOS-style terminal.">
+  <meta property="og:url" content="https://cli.kiranm.in/">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23111827'/><text x='50' y='68' font-size='50' font-family='monospace' font-weight='bold' fill='%23fbbf24' text-anchor='middle'>&gt;_</text></svg>">
+  <style>
+    /* ==========================================================================
+       CSS Custom Properties & Theme Setup (Light Default + Dark Mode)
+       ========================================================================== */
+    :root, [data-theme="light"] {
+      --bg-page: #e9ecef;
+      --bg-terminal: #f5f5f5;
+      --bg-titlebar: #e4e6eb;
+      --border-window: #d0d7de;
+      --border-subtle: #e1e4e8;
+      --text-main: #24292f;
+      --text-muted: #656d76;
+      --text-dim: #8c959f;
+      --prompt-user: #e67e22;
+      --prompt-host: #008080;
+      --prompt-path: #2b6cb0;
+      --accent: #d97706;
+      --accent-hover: #b45309;
+      --link: #0969da;
+      --link-hover: #0550ae;
+      --cmd-color: #0f172a;
+      --code-bg: #eaecef;
+      --success: #1a7f37;
+      --warning: #9a6700;
+      --error: #cf222e;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+      --scrollbar-track: #e9ecef;
+      --scrollbar-thumb: #cbd5e1;
+      --scrollbar-thumb-hover: #94a3b8;
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #0d1117;
+      --bg-terminal: #161b22;
+      --bg-titlebar: #1f242c;
+      --border-window: #30363d;
+      --border-subtle: #21262d;
+      --text-main: #e6edf3;
+      --text-muted: #8b949e;
+      --text-dim: #6e7681;
+      --prompt-user: #f39c12;
+      --prompt-host: #2dd4bf;
+      --prompt-path: #60a5fa;
+      --accent: #fbbf24;
+      --accent-hover: #f59e0b;
+      --link: #58a6ff;
+      --link-hover: #79c0ff;
+      --cmd-color: #f0f6fc;
+      --code-bg: #21262d;
+      --success: #3fb950;
+      --warning: #d29922;
+      --error: #f85149;
+      --shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      --scrollbar-track: #161b22;
+      --scrollbar-thumb: #30363d;
+      --scrollbar-thumb-hover: #484f58;
+    }
+
+    /* Reset & Base Layout */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      font-family: ui-monospace, 'SF Mono', 'Cascadia Code', 'Fira Code', Menlo, Monaco, Consolas, 'Courier New', monospace;
+      font-size: 13.5px;
+      line-height: 1.6;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    /* macOS Window Frame */
+    .terminal-window {
+      width: 100%;
+      max-width: 960px;
+      height: 82vh;
+      min-height: 540px;
+      max-height: 860px;
+      background: var(--bg-terminal);
+      border: 1px solid var(--border-window);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    /* Titlebar & Traffic Lights */
+    .terminal-titlebar {
+      height: 38px;
+      background: var(--bg-titlebar);
+      border-bottom: 1px solid var(--border-window);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .traffic-lights {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 60px;
+    }
+
+    .traffic-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .traffic-close {
+      background-color: #ff5f56;
+      border: 1px solid #e0443e;
+    }
+
+    .traffic-minimize {
+      background-color: #ffbd2e;
+      border: 1px solid #dea123;
+    }
+
+    .traffic-expand {
+      background-color: #27c93f;
+      border: 1px solid #1aab29;
+    }
+
+    .traffic-lights:hover .traffic-close::after {
+      content: '×';
+      position: absolute;
+      top: -2px;
+      left: 2px;
+      font-size: 10px;
+      font-weight: bold;
+      color: #5c0000;
+    }
+
+    .traffic-lights:hover .traffic-minimize::after {
+      content: '–';
+      position: absolute;
+      top: -4px;
+      left: 2px;
+      font-size: 10px;
+      font-weight: bold;
+      color: #5c3b00;
+    }
+
+    .traffic-lights:hover .traffic-expand::after {
+      content: '+';
+      position: absolute;
+      top: -2px;
+      left: 2px;
+      font-size: 10px;
+      font-weight: bold;
+      color: #004d00;
+    }
+
+    .window-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+      text-align: center;
+      flex-grow: 1;
+    }
+
+    .titlebar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 60px;
+      justify-content: flex-end;
+    }
+
+    .theme-toggle-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 2px 4px;
+      border-radius: 4px;
+      line-height: 1;
+      transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .theme-toggle-btn:hover {
+      color: var(--text-main);
+      background-color: var(--border-subtle);
+    }
+
+    /* Terminal Body Output Area */
+    .terminal-body {
+      flex: 1;
+      padding: 18px 22px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      cursor: text;
+    }
+
+    /* Custom Scrollbar */
+    .terminal-body::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .terminal-body::-webkit-scrollbar-track {
+      background: var(--scrollbar-track);
+    }
+
+    .terminal-body::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb);
+      border-radius: 4px;
+    }
+
+    .terminal-body::-webkit-scrollbar-thumb:hover {
+      background: var(--scrollbar-thumb-hover);
+    }
+
+    /* Output Styling */
+    .output-entry {
+      margin-bottom: 12px;
+    }
+
+    .command-echo {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .command-echo .prompt-user {
+      color: var(--prompt-user);
+      font-weight: 700;
+    }
+
+    .command-echo .prompt-host {
+      color: var(--prompt-host);
+      font-weight: 700;
+    }
+
+    .command-echo .prompt-path {
+      color: var(--prompt-path);
+    }
+
+    .command-echo .cmd-text {
+      color: var(--cmd-color);
+      font-weight: 600;
+    }
+
+    .command-result {
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
+    /* ASCII Banner */
+    .ascii-banner {
+      font-family: inherit;
+      color: var(--accent);
+      font-size: 11px;
+      line-height: 1.25;
+      font-weight: bold;
+      margin-bottom: 14px;
+      white-space: pre;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    /* Links & Highlights */
+    a {
+      color: var(--link);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color 0.15s ease;
+    }
+
+    a:hover {
+      color: var(--link-hover);
+    }
+
+    .text-muted { color: var(--text-muted); }
+    .text-dim { color: var(--text-dim); }
+    .text-accent { color: var(--accent); font-weight: 600; }
+    .text-success { color: var(--success); }
+    .text-warning { color: var(--warning); }
+    .text-error { color: var(--error); }
+    .font-bold { font-weight: bold; }
+
+    /* Tables & Aligned Lists */
+    .cmd-grid {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 4px 16px;
+      margin: 8px 0;
+    }
+
+    .cmd-key {
+      color: var(--prompt-user);
+      font-weight: 600;
+    }
+
+    .section-header {
+      color: var(--prompt-host);
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 12px 0 6px 0;
+      border-bottom: 1px dashed var(--border-window);
+      padding-bottom: 3px;
+    }
+
+    .card-block {
+      background: var(--code-bg);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      margin: 6px 0 10px 0;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* Active Input Line */
+    .input-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      padding-bottom: 4px;
+    }
+
+    .prompt-label {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .prompt-user {
+      color: var(--prompt-user);
+      font-weight: 700;
+    }
+
+    .prompt-host {
+      color: var(--prompt-host);
+      font-weight: 700;
+    }
+
+    .prompt-path {
+      color: var(--prompt-path);
+      font-weight: 600;
+    }
+
+    .prompt-symbol {
+      color: var(--text-main);
+      font-weight: bold;
+      margin-left: 2px;
+    }
+
+    .cmd-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: inherit;
+      color: var(--cmd-color);
+      font-weight: 600;
+      caret-color: var(--accent);
+      padding: 0;
+      margin: 0;
+    }
+
+    /* AI Thinking Spinner */
+    .thinking-spinner {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    .spinner-dot {
+      display: inline-block;
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+
+    /* Helper Footer Info */
+    .terminal-footer-hint {
+      margin-top: 14px;
+      font-size: 11.5px;
+      color: var(--text-dim);
+      text-align: center;
+      user-select: none;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      body {
+        padding: 8px;
+      }
+
+      .terminal-window {
+        height: 94vh;
+        max-height: none;
+        border-radius: 8px;
+      }
+
+      .terminal-body {
+        padding: 12px 14px;
+        font-size: 12.5px;
+      }
+
+      .cmd-grid {
+        grid-template-columns: 1fr;
+        gap: 2px 0;
+        margin-bottom: 8px;
+      }
+
+      .cmd-key {
+        margin-top: 6px;
+      }
+
+      .ascii-banner {
+        font-size: 9.5px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="terminal-window" id="terminal-window" role="region" aria-label="Interactive Terminal Portfolio">
+    <!-- Top macOS Titlebar -->
+    <header class="terminal-titlebar">
+      <div class="traffic-lights" aria-label="Window controls">
+        <span class="traffic-dot traffic-close" id="btn-close" title="Clear screen"></span>
+        <span class="traffic-dot traffic-minimize" id="btn-minimize" title="Reset view"></span>
+        <span class="traffic-dot traffic-expand" id="btn-expand" title="Toggle theme"></span>
+      </div>
+      <div class="window-title">kiran@terminal: ~</div>
+      <div class="titlebar-actions">
+        <button type="button" class="theme-toggle-btn" id="theme-btn" title="Toggle theme (theme command)" aria-label="Toggle theme">◑</button>
+      </div>
+    </header>
+
+    <!-- Terminal Output Body -->
+    <div class="terminal-body" id="terminal-body">
+      <div id="output-history"></div>
+
+      <!-- Current Interactive Prompt Line -->
+      <div class="input-line">
+        <label for="cli-input" class="prompt-label">
+          <span class="prompt-user">kiran</span><span class="text-dim">@</span><span class="prompt-host">cli</span><span class="text-dim">:</span><span class="prompt-path">~</span><span class="prompt-symbol">$</span>
+        </label>
+        <input
+          type="text"
+          id="cli-input"
+          class="cmd-input"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          aria-label="Terminal command input"
+        />
+      </div>
+    </div>
+  </main>
+
+  <footer class="terminal-footer-hint">
+    <span>Tip: Type <span class="text-accent">help</span> for commands, <span class="text-accent">ai &lt;query&gt;</span> to chat, or <span class="text-accent">gui</span> for standard site. Use Tab to autocomplete &amp; &uarr;/&darr; for history.</span>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ======================================================================
+      // DOM Elements
+      // ======================================================================
+      const bodyEl = document.getElementById('terminal-body');
+      const historyEl = document.getElementById('output-history');
+      const inputEl = document.getElementById('cli-input');
+      const themeBtn = document.getElementById('theme-btn');
+      const btnClose = document.getElementById('btn-close');
+      const btnMinimize = document.getElementById('btn-minimize');
+      const btnExpand = document.getElementById('btn-expand');
+
+      // ======================================================================
+      // Command History & Autocomplete State
+      // ======================================================================
+      const commandHistory = [];
+      let historyIndex = -1;
+      let isWaitingForAi = false;
+
+      const AVAILABLE_COMMANDS = [
+        'welcome',
+        'help',
+        'about',
+        'stack',
+        'work',
+        'ai',
+        'theme',
+        'gui',
+        'contact',
+        'clear'
+      ];
+
+      // ======================================================================
+      // Theme Management (Light default + Dark mode)
+      // ======================================================================
+      function getStoredTheme() {
+        try {
+          return localStorage.getItem('terminal_theme') || 'light';
+        } catch {
+          return 'light';
+        }
+      }
+
+      function setTheme(theme) {
+        const nextTheme = theme === 'dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', nextTheme);
+        try {
+          localStorage.setItem('terminal_theme', nextTheme);
+        } catch {
+          // Ignore localStorage errors
+        }
+        themeBtn.setAttribute('title', `Current theme: ${nextTheme} (Click to toggle)`);
+        return nextTheme;
+      }
+
+      function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme') || 'light';
+        return setTheme(current === 'dark' ? 'light' : 'dark');
+      }
+
+      // Initialize theme on load
+      setTheme(getStoredTheme());
+
+      // ======================================================================
+      // Helper: Escape HTML to Prevent XSS
+      // ======================================================================
+      function escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      // ======================================================================
+      // Autoscroll Terminal to Bottom
+      // ======================================================================
+      function scrollToBottom() {
+        bodyEl.scrollTop = bodyEl.scrollHeight;
+      }
+
+      // ======================================================================
+      // Render Content Blocks
+      // ======================================================================
+      function appendEcho(rawCommand) {
+        const entry = document.createElement('div');
+        entry.className = 'command-echo';
+        entry.innerHTML = `
+          <span class="prompt-user">kiran</span><span class="text-dim">@</span><span class="prompt-host">cli</span><span class="text-dim">:</span><span class="prompt-path">~</span><span class="prompt-symbol">$</span>
+          <span class="cmd-text">${escapeHtml(rawCommand)}</span>
+        `;
+        historyEl.appendChild(entry);
+      }
+
+      function appendResult(htmlContent) {
+        const result = document.createElement('div');
+        result.className = 'command-result output-entry';
+        result.innerHTML = htmlContent;
+        historyEl.appendChild(result);
+        scrollToBottom();
+      }
+
+      // ======================================================================
+      // Commands Definitions & Outputs
+      // ======================================================================
+      const WELCOME_BANNER = `
+<pre class="ascii-banner">
+   __ __ _                  __  ___        ┌────────────────────────────┐
+  / //_/(_)______ ____     /  |/  /        │  &gt;_  kiran@cli: ~          │
+ / ,&lt;  / / __/ _ \`/ _ \\   / /|_/ /         │  ------------------------  │
+/_/|_|/_/_/  \\_,_/_//_/  /_/  /_/          │  Web Dev &amp; Technical SEO   │
+                                           └────────────────────────────┘
+</pre>
+<div>
+  <p><span class="text-accent font-bold">Kiran More</span> &mdash; Web Developer &amp; Technical SEO Specialist</p>
+  <p class="text-muted">Based in Mumbai, India (IST / UTC+5:30) &middot; 10+ Years Production Experience</p>
+  <p class="text-muted">Verified Shopify Partner (Partner ID: 2293029) &middot; DIGIVELOCE</p>
+  <br>
+  <p><span class="font-bold">Core Stack:</span> WordPress &middot; WooCommerce &middot; Shopify (Liquid) &middot; Astro &middot; Workers AI</p>
+  <p><span class="font-bold">Direct Links:</span> <a href="mailto:hello@kiranm.in">hello@kiranm.in</a> &middot; <a href="https://kiranm.in" target="_blank" rel="noopener noreferrer">https://kiranm.in</a> &middot; <a href="https://github.com/kiran11more" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+  <br>
+  <p>Type <span class="text-accent font-bold">help</span> to view available commands, or <span class="text-accent font-bold">ai &lt;question&gt;</span> to ask anything.</p>
+</div>`;
+
+      const HELP_TEXT = `
+<div class="section-header">Available Commands</div>
+<div class="cmd-grid">
+  <div class="cmd-key">welcome</div>
+  <div>Re-render the welcome banner and introductory profile</div>
+
+  <div class="cmd-key">help</div>
+  <div>List all available interactive terminal commands</div>
+
+  <div class="cmd-key">about</div>
+  <div>Background, engineering philosophy, and experience summary</div>
+
+  <div class="cmd-key">stack</div>
+  <div>Technical skills across CMS, E-commerce, Frontend &amp; SEO</div>
+
+  <div class="cmd-key">work</div>
+  <div>Featured production projects, live client builds &amp; demos</div>
+
+  <div class="cmd-key">ai &lt;question&gt;</div>
+  <div>Query Kiran's live AI assistant (powered by Cloudflare Workers AI)</div>
+
+  <div class="cmd-key">theme [light|dark]</div>
+  <div>Switch terminal color scheme (default: light)</div>
+
+  <div class="cmd-key">gui</div>
+  <div>Launch the visual portfolio website (https://kiranm.in) in a new tab</div>
+
+  <div class="cmd-key">contact</div>
+  <div>Direct email, GitHub, and inquiry channels</div>
+
+  <div class="cmd-key">clear</div>
+  <div>Clear the terminal display screen (or press Ctrl+L)</div>
+</div>`;
+
+      const ABOUT_TEXT = `
+<div class="section-header">About Kiran More</div>
+<p>Independent web engineer with <span class="text-accent font-bold">10+ years of production experience</span> (since 2016) based in Mumbai, India (IST), operating under registered business entity <span class="font-bold">DIGIVELOCE</span>.</p>
+<br>
+<div class="card-block">
+  <p class="font-bold">Specialization &amp; Approach:</p>
+  <p>&bull; <strong>Custom Block Architecture:</strong> Lightweight WordPress &amp; WooCommerce setups with zero page-builder bloat (Gutenberg, custom PHP hooks, clean DB queries).</p>
+  <p>&bull; <strong>Bespoke Shopify Themes:</strong> Verified Shopify Partner creating custom Liquid sections and native metafields without recurring monthly app costs.</p>
+  <p>&bull; <strong>Sub-Second Headless Frontends:</strong> Blazing-fast static and edge frontends with Astro, Tailwind CSS, and global Cloudflare distribution.</p>
+  <p>&bull; <strong>White-Label Agency Support:</strong> Seamless, unbranded execution under NDA for digital agencies in the UK, US, EU, AU, and globally.</p>
+</div>
+<p>Kiran works directly via secure collaborator requests, Git repositories, or staging environments so clients never share raw admin passwords.</p>`;
+
+      const STACK_TEXT = `
+<div class="section-header">Technical Stack &amp; Tooling</div>
+
+<p class="text-accent font-bold">// CMS &amp; E-COMMERCE</p>
+<p>&bull; <strong>WordPress:</strong> Custom Gutenberg block architecture, custom PHP hooks, child themes, REST API, ACF Pro.</p>
+<p>&bull; <strong>WooCommerce:</strong> High-converting 1-page express checkout, AJAX cart &amp; filters, Stripe / PayPal, DB scaling.</p>
+<p>&bull; <strong>Shopify:</strong> Online Store 2.0, custom Liquid sections, variant/metafield logic, app-bloat audit &amp; reduction.</p>
+<br>
+<p class="text-accent font-bold">// MODERN FRONTEND &amp; HEADLESS</p>
+<p>&bull; <strong>Astro:</strong> SSG/SSR builds, islands architecture, content collections, 99+ mobile PageSpeed scores.</p>
+<p>&bull; <strong>Languages &amp; Styling:</strong> TypeScript, JavaScript (ESNext), PHP 8.x, Liquid, HTML5 semantics, Tailwind CSS.</p>
+<br>
+<p class="text-accent font-bold">// EDGE, WORKFLOWS &amp; TECHNICAL SEO</p>
+<p>&bull; <strong>Cloudflare Ecosystem:</strong> Pages, Workers, KV, Workers AI (@cf/meta/llama-3.1-8b-instruct-fp8-fast).</p>
+<p>&bull; <strong>AI Automations:</strong> Make.com, n8n webhook workflows, Retell AI voice agents, WhatsApp/CRM lead routing.</p>
+<p>&bull; <strong>Technical SEO:</strong> Surgical Core Web Vitals (LCP &lt; 1.0s, INP &lt; 50ms, CLS 0.00), Schema.org JSON-LD graphs.</p>`;
+
+      const WORK_TEXT = `
+<div class="section-header">Featured Work &amp; Case Studies</div>
+
+<div class="card-block">
+  <p class="font-bold">01. Bespoke Shopify Store &amp; CRO Optimization</p>
+  <p class="text-muted">Custom Online Store 2.0 sections, native variant picker, slide-out cart drawer, and 0 monthly app bloat.</p>
+  <p>&rarr; <a href="https://kiranm.in/#work" target="_blank" rel="noopener noreferrer">View details on kiranm.in/#work</a></p>
+</div>
+
+<div class="card-block">
+  <p class="font-bold">02. Headless WordPress + Astro Edge Frontend</p>
+  <p class="text-muted">Decoupled WordPress REST API content engine coupled with an Astro edge SSG on Cloudflare Pages. Sub-second TTFB and 99+ Mobile PageSpeed.</p>
+  <p>&rarr; <a href="https://kiranm.in/#work" target="_blank" rel="noopener noreferrer">View details on kiranm.in/#work</a></p>
+</div>
+
+<div class="card-block">
+  <p class="font-bold">03. Interactive Trade &amp; Contractor Experience Demos</p>
+  <p class="text-muted">Ultra-responsive booking, dynamic quote calculations, and conversion-focused landers:</p>
+  <p>&bull; Apex Electrical: <a href="https://kiranm.in/demos/electrical" target="_blank" rel="noopener noreferrer">https://kiranm.in/demos/electrical</a></p>
+  <p>&bull; FlowPro Plumbing: <a href="https://kiranm.in/demos/plumbing" target="_blank" rel="noopener noreferrer">https://kiranm.in/demos/plumbing</a></p>
+  <p>&bull; Summit Roofing: <a href="https://kiranm.in/demos/roofing" target="_blank" rel="noopener noreferrer">https://kiranm.in/demos/roofing</a></p>
+</div>
+
+<div class="card-block">
+  <p class="font-bold">04. Core Web Vitals &amp; PageSpeed Rescue</p>
+  <p class="text-muted">Surgical elimination of render-blocking JavaScript and bloatware; transformed failing mobile CWV metrics into all-green 95+ performance.</p>
+  <p>&rarr; <a href="https://kiranm.in/services/page-speed-optimization" target="_blank" rel="noopener noreferrer">View speed optimization breakdown</a></p>
+</div>
+
+<p>Inspect full live case studies and metrics at <a href="https://kiranm.in/#work" target="_blank" rel="noopener noreferrer">https://kiranm.in/#work</a>.</p>`;
+
+      const CONTACT_TEXT = `
+<div class="section-header">Direct Contact</div>
+<p>Kiran welcomes direct inquiries for custom website builds, speed audits, and white-label agency partnerships.</p>
+<br>
+<p>&bull; <strong>Email:</strong> <a href="mailto:hello@kiranm.in">hello@kiranm.in</a> <span class="text-muted">(Typical reply within 24 hours)</span></p>
+<p>&bull; <strong>Main Portfolio:</strong> <a href="https://kiranm.in" target="_blank" rel="noopener noreferrer">https://kiranm.in</a></p>
+<p>&bull; <strong>Interactive Brief Form:</strong> <a href="https://kiranm.in/contact" target="_blank" rel="noopener noreferrer">https://kiranm.in/contact</a></p>
+<p>&bull; <strong>GitHub:</strong> <a href="https://github.com/kiran11more" target="_blank" rel="noopener noreferrer">https://github.com/kiran11more</a></p>
+<p>&bull; <strong>Location:</strong> Mumbai, India (IST / UTC+5:30) &middot; Serving clients across UK, US, EU, AU &amp; globally</p>`;
+
+      // ======================================================================
+      // AI Assistant Integration (Workers AI via POST /api/chat)
+      // ======================================================================
+      async function handleAiCommand(question) {
+        if (!question || !question.trim()) {
+          appendResult(`
+            <p class="text-warning">Usage: <span class="text-accent">ai &lt;question&gt;</span></p>
+            <p class="text-muted">Example: <code>ai What is your experience with Shopify and WooCommerce?</code></p>
+            <p class="text-muted">Example: <code>ai Can you optimize Core Web Vitals on an existing WordPress site?</code></p>
+          `);
+          return;
+        }
+
+        const trimmedQ = question.trim();
+        const placeholder = document.createElement('div');
+        placeholder.className = 'command-result output-entry';
+        placeholder.innerHTML = `<span class="thinking-spinner"><span class="spinner-dot">●</span> Kiran AI is thinking...</span>`;
+        historyEl.appendChild(placeholder);
+        scrollToBottom();
+
+        isWaitingForAi = true;
+        inputEl.disabled = true;
+
+        try {
+          const res = await fetch('https://kiranm.in/api/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              messages: [{ role: 'user', content: trimmedQ }]
+            })
+          });
+
+          if (!res.ok) {
+            throw new Error(`Server returned HTTP ${res.status}`);
+          }
+
+          const data = await res.json();
+          // Support both { reply } and { message } payload shapes
+          const rawReply = data?.reply || data?.message || data?.response || 'No reply generated by assistant.';
+
+          // Format markdown links [text](url) safely inside AI reply
+          const formattedReply = escapeHtml(rawReply)
+            .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+|#[^\s)]+|\/[^\s)]*)\)/g, (match, label, url) => {
+              const safeUrl = url.startsWith('/') ? `https://kiranm.in${url}` : (url.startsWith('#') ? `https://kiranm.in/${url}` : url);
+              return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+            })
+            .replace(/\n/g, '<br>');
+
+          placeholder.innerHTML = `
+            <div class="card-block">
+              <p><span class="text-accent font-bold">Kiran AI Assistant:</span></p>
+              <div style="margin-top: 4px;">${formattedReply}</div>
+            </div>
+          `;
+        } catch (err) {
+          placeholder.innerHTML = `
+            <p class="text-error">&times; AI query failed: ${escapeHtml(err.message || 'Unable to connect to live AI endpoint.')}</p>
+            <p class="text-muted">Direct inquiries can always be sent directly to <a href="mailto:hello@kiranm.in">hello@kiranm.in</a>.</p>
+          `;
+        } finally {
+          isWaitingForAi = false;
+          inputEl.disabled = false;
+          inputEl.focus();
+          scrollToBottom();
+        }
+      }
+
+      // ======================================================================
+      // Command Dispatcher
+      // ======================================================================
+      async function executeCommand(rawInput) {
+        const trimmed = rawInput.trim();
+        if (!trimmed) return;
+
+        // Record in command history
+        commandHistory.push(trimmed);
+        historyIndex = commandHistory.length;
+
+        // Echo typed command
+        appendEcho(trimmed);
+
+        const spaceIdx = trimmed.indexOf(' ');
+        const cmd = (spaceIdx === -1 ? trimmed : trimmed.slice(0, spaceIdx)).toLowerCase();
+        const args = spaceIdx === -1 ? '' : trimmed.slice(spaceIdx + 1).trim();
+
+        switch (cmd) {
+          case 'welcome':
+            appendResult(WELCOME_BANNER);
+            break;
+
+          case 'help':
+            appendResult(HELP_TEXT);
+            break;
+
+          case 'about':
+            appendResult(ABOUT_TEXT);
+            break;
+
+          case 'stack':
+            appendResult(STACK_TEXT);
+            break;
+
+          case 'work':
+          case 'projects':
+            appendResult(WORK_TEXT);
+            break;
+
+          case 'ai':
+          case 'ask':
+            await handleAiCommand(args);
+            break;
+
+          case 'theme': {
+            const sub = args.toLowerCase();
+            let targetTheme = '';
+            if (sub === 'dark') {
+              targetTheme = setTheme('dark');
+            } else if (sub === 'light') {
+              targetTheme = setTheme('light');
+            } else if (!sub) {
+              targetTheme = toggleTheme();
+            } else {
+              appendResult(`<p class="text-warning">Unknown theme option '${escapeHtml(sub)}'. Use: <span class="text-accent">theme light</span> or <span class="text-accent">theme dark</span>.</p>`);
+              return;
+            }
+            appendResult(`<p class="text-success">&check; Switched terminal theme to <span class="font-bold">${targetTheme}</span>.</p>`);
+            break;
+          }
+
+          case 'gui':
+          case 'website':
+          case 'web':
+            appendResult(`<p class="text-accent">&rarr; Opening https://kiranm.in in a new tab...</p>`);
+            window.open('https://kiranm.in', '_blank', 'noopener,noreferrer');
+            break;
+
+          case 'contact':
+          case 'email':
+            appendResult(CONTACT_TEXT);
+            break;
+
+          case 'clear':
+          case 'cls':
+            historyEl.innerHTML = '';
+            break;
+
+          default:
+            appendResult(`
+              <p class="text-error">command not found: ${escapeHtml(cmd)}</p>
+              <p class="text-muted">Type <span class="text-accent">help</span> to view available commands.</p>
+            `);
+            break;
+        }
+      }
+
+      // ======================================================================
+      // Input & Keyboard Event Listeners
+      // ======================================================================
+      inputEl.addEventListener('keydown', (e) => {
+        // Prevent action while waiting for AI response
+        if (isWaitingForAi) {
+          e.preventDefault();
+          return;
+        }
+
+        // Enter: Execute command
+        if (e.key === 'Enter') {
+          const val = inputEl.value;
+          inputEl.value = '';
+          executeCommand(val);
+          return;
+        }
+
+        // ArrowUp: Navigate history backwards
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          if (commandHistory.length === 0) return;
+          if (historyIndex > 0) {
+            historyIndex--;
+            inputEl.value = commandHistory[historyIndex];
+          }
+          return;
+        }
+
+        // ArrowDown: Navigate history forwards
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          if (commandHistory.length === 0) return;
+          if (historyIndex < commandHistory.length - 1) {
+            historyIndex++;
+            inputEl.value = commandHistory[historyIndex];
+          } else {
+            historyIndex = commandHistory.length;
+            inputEl.value = '';
+          }
+          return;
+        }
+
+        // Tab: Autocomplete matching command names
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          const current = inputEl.value.trim().toLowerCase();
+          if (!current) return;
+
+          const matches = AVAILABLE_COMMANDS.filter((cmd) => cmd.startsWith(current));
+          if (matches.length === 1) {
+            inputEl.value = matches[0] + ' ';
+          } else if (matches.length > 1) {
+            appendEcho(inputEl.value);
+            appendResult(`<p class="text-muted">${matches.join(' &nbsp;&middot;&nbsp; ')}</p>`);
+          }
+          return;
+        }
+
+        // Ctrl+L: Clear screen
+        if (e.ctrlKey && (e.key === 'l' || e.key === 'L')) {
+          e.preventDefault();
+          historyEl.innerHTML = '';
+          return;
+        }
+      });
+
+      // Focus input on click anywhere on terminal body (unless highlighting text)
+      bodyEl.addEventListener('click', (e) => {
+        // Don't steal focus if user clicked an anchor tag
+        if (e.target && e.target.tagName === 'A') return;
+        const selection = window.getSelection();
+        if (!selection || selection.toString().length === 0) {
+          inputEl.focus();
+        }
+      });
+
+      // Titlebar buttons
+      themeBtn.addEventListener('click', () => {
+        toggleTheme();
+      });
+
+      btnClose.addEventListener('click', () => {
+        historyEl.innerHTML = '';
+        inputEl.focus();
+      });
+
+      btnMinimize.addEventListener('click', () => {
+        historyEl.innerHTML = '';
+        appendResult(WELCOME_BANNER);
+        inputEl.focus();
+      });
+
+      btnExpand.addEventListener('click', () => {
+        toggleTheme();
+        inputEl.focus();
+      });
+
+      // ======================================================================
+      // Boot Sequence (Auto-run 'welcome')
+      // ======================================================================
+      appendResult(WELCOME_BANNER);
+      inputEl.focus();
+
+    })();
+  </script>
+</body>
+</html>
